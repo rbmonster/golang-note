@@ -1346,3 +1346,101 @@ for ; finsh>0;finish-- {
 出现该错误，说明无缓冲队列存在无接收阻塞或者发送阻塞，而当前所有的goroutine 都已经结束。
 
 `tick := time.Tick(1 * time.Second)` 可以用于定期的发送事件
+
+## 使用共享变量实现并发
+
+并发概念：如果无法确定一个goroutine的事件x与另一个goroutine的事件y的先后顺序， 那么这两个事件就是并发的。
+
+Go并发核心：**不要通过共享内存来通信，应该通过通信来共享内存**。使用通道请求来代理一个受限变量的所有访问的goroutine称为该变量的监控goroutine(monitor goroutine)
+
+
+竞态：多个goroutine按某些交错顺序执行时程序无法给出正确的结果。
+
+数据静态：两个goroutine并发读写同一个变量并且至少其中一个是写入时。\
+避免数据竟态：
+1. 方法不要修改变量。
+2. 避免从多个goroutine访问同一个变量。
+3. 允许多个goroutine访问同一变量，但是同一事件只有一个goroutine可以访问。(互斥机制)
+
+**串行受限**：借助通道把共享变量的地址从上一步到下一步，从而在流水线上的多个goroutine之间共享该变量。而该共享变量就受限于流水线的第一步，这种受限就是串行受限
+
+
+### sync
+
+#### sync.Mutex
+
+`sync.Mutex`:互斥锁，互斥量保护共享变量，**互斥量是不可重入**的。
+```
+var mu sync.Mutex
+mu.Lock()
+defer mu.Unlock()
+// unlock
+mu.Unlock()
+```
+
+#### sync.RWMutex
+`sync.RWMutex`：读写互斥锁，适用于获取读锁且锁竞争激烈比较有优势，因为RWMutex需要更复杂的内部设置工作，所以在竞争不激烈的情况反而比普通的互斥锁慢。
+
+```
+var mw sync.RWMutex
+
+mw.RLock() // 读锁
+mw.RUnlock()
+mw.Lock() // 写锁
+mw.Unlock() 
+```
+
+#### sync.Once
+
+`sync.Once`:针对一次性初始化问题，Once中包含一个boolean的变量和一个互斥量，boolean变量标志记录是否初始化完成。
+
+```
+var once sync.Once
+
+var f = func() {
+    fmt.Println("init")
+}
+// 首次调用布尔变量为false，调用完成后boolean为true
+once.Do(f)
+```
+
+
+
+### 其他
+
+**竞争检测器**：Go命令行中内置的竞争检测功能`-race` 可以帮忙调试检测程序中的竞争情况
+
+## goroutine与线程
+
+goroutine的栈空间是不固定的，它可以按需增大和缩小，栈空间的限制可以达到1GB，比线程典型的固定大小栈高几个数量级。
+> 正常的操作系统(OS)线程则是使用固定大小的栈空间，可能造成浪费，而对于DFS的场景又可能导致太小。因此可拓展的栈空间会更灵活。
+
+
+### goroutine调度
+操作系统线程(OS)由内核进行调度，线程切换需要一个完整的上下文切换，切换的操作需要耗费事件
+> 上下文切换：保存一个线程的状态到内存，再恢复另一个线程的状态，最后更新调度器的数据结构。涉及内存的局限性、内存的访问数量、访问内存所需的CPU周期数量的增加
+
+Go运行时包含一个自己的调度器，使用`m:n`调度技术(可以复用/调度m个goroutine到n个OS线程)。当一个goroutine调用time.Sleep、被通道阻塞、互斥量操作时，调度器会设置goroutine为休眠模式，并运行其他goroutine直到被唤醒，该**操作不涉及内核环境的切换**。
+
+### `GOMAXPROCS`
+`GOMAXPROCS`参数用来确定需要多少个OS线程来同时执行Go代码。默认值是机器上的CPU数量。
+> 阻塞在IO、其他系统调用中、调用非Go语言写的函数的goroutine需要一个独立的OS线程，这个线程不再该参数内。
+
+```
+for {
+    go fmt.Print(0)
+    fmt.Print(1)
+}
+// output～
+// 111111100011111100000011...
+
+// GOMAXPROS=1 go run test.go
+// 指定一个核心进行运行，每次最多只能一个goroutine运行，因此无法保证0101的输出
+```
+
+### goroutine没有标识(局部存储空间)
+goroutine无类似于线程的局部存储，如Java中的ThreadLocal，设计决定的。
+
+1. 避免"超距作用"，即函数的行为不仅取决于它的参数，还取决于它的线程标识存储空间，导致函数或方法的行为难以理解。'】
+2. 鼓励更简单的编程风格，影响一个函数行为的仅由其参数决定。
+
