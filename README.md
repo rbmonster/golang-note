@@ -1,7 +1,6 @@
 # golang-note
 
 
-
 声明：
 - 变量 var
 - 常量 const
@@ -881,6 +880,11 @@ func main() {
     q := Point{3,5}
     // 方法的调用
     fmt.Println(q.Distance(p))
+    
+    // 指定方法参数
+	dis := p.Distance
+	res := dis(q.Point)
+	fmt.Println(res)
 }
 ```
 
@@ -948,3 +952,397 @@ func (p Point) Distance(q Point) float64 {
 	return math.Hypot(p.X - q.X, p.Y - q.Y)
 }
 ```
+
+### 封装
+Go语言只有一种方式控制命名的可见行：定义的时候首字母大写的标识符是可以从包中导出的，而首字母没有大写不导出。
+
+封装三个优点
+1. 防止使用者肆意修改对象内变量。
+2. 隐藏实现细节防止使用方依赖的属性发生改变。
+3. 使用者不能直接修改，因此不需要更多的语句来检查变量的值。
+
+
+## 接口
+
+### 接口定义
+Go语言的接口独特之处在于接口是隐式实现的。对于一个具体的类型，无须声明它实现了哪些接口，只要提供接口所必须的方法即可。
+
+接口是一种抽象类型，一个具体类型只要实现了接口的所有方法，就该接口参数就可以指向该类型。这种把一种类型替换，为满足同一接口的另一种类型的特性称为可取代性。
+> 一个接口类型定义了一套方法，如果一个具体类型要实现该接口，那么必须实现接口类型定义中的所有方法。
+> 空接口类型对实现类型没有任何要求，所以可以把任何之都赋给空接口类型
+
+```
+var w io.Writer
+w = os.Stdout
+w = new(bytes.Buffer)
+w = time.Second   // error 实现中缺少write方法
+
+
+var any interface{}
+any = true
+any = 123
+any = map[string]int{"123": 3}
+```
+
+接口类型的值包含两部分：一个**具体类型**和**该类型的一个值**，分别称为**动态类型**和**动态值**
+
+![image](https://github.com/rbmonster/file-storage/blob/main/golang-note/basic/interfacevalue.png)
+
+图中分别为声明一个接口及为接口赋值
+```
+var w io.Writer
+w = os.Stdout
+```
+
+**接口值**：接口可以直接用 `==` 比较，如果两个接口值都是nil或者二者的动态值相等，那么两个接口值相等
+
+[comment]: <> (> 若一个变量仅进行参数声明，未进行赋值，当调用`w != nil` 的防御性检查将失效)
+
+**类型断言**：检查作为操作数的动态类型是否满足指定的断言类型，类似于x(T)
+> 如果断言类型是个具体类型，那么类型断言会检查x的动态类型是否就是T\
+> 如果断言类型是接口类型，那么类型断言检查x的动态类型是否满足T\
+> 断言中T是否使用`*` 在于支持的类型实现的方法，是否为指针方法，当然编译器会进行优化
+```
+var w io.Writer
+w = os.Stdout
+f := w.(*os.File)
+c := w.(*bytes.Buffer) // 执行报错，持有的接口为 *os.file
+
+c, ok := w.(*bytes.Buffer)  // 通过ok返回值确定类型是否正确，直接避免报错
+
+if !ok {
+    fmt.Println(c)
+}
+```
+
+
+类型分支：
+1. 子类型多态：如http.Handler与sort.Interface 等接口，各种方法突出了满足这个接口的具体类型，但隐藏了各个具体类型的布局和各自特有的功能。
+2. 特设多态(可联合识别):充分利用接口值能容纳各种具体类型的能力，把接口作为这些类型的联合来使用。
+
+
+### http.Handler接口
+一个httpserver 服务需要实现handler接口
+```
+package http
+
+type Handler interface {
+	ServeHTTP(w ResponseWriter, r *Request)
+}
+
+func ListenAndServe(address string, h Handler) error
+```
+
+database类型实现了handler接口的方法
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+)
+
+func main() {
+	db := database{"shoes": 50, "socks": 5}
+	log.Fatal(http.ListenAndServe("localhost:8000", db))
+}
+
+type dollars float32
+
+type database map[string]dollars
+
+func (d dollars) String() string { return fmt.Sprintf("$%.2f", d) }
+
+
+func (db database) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	for item, price := range db {
+		fmt.Fprintf(w, "%s: %s\n", item, price)
+	}
+}
+
+```
+
+
+net/http包请求**多工转发器serverMux**，简化URL与处理程序之间的关联
+```
+type HandlerFunc func(ResponseWriter, *Request)
+
+// ServeHTTP calls f(w, r).
+func (f HandlerFunc) ServeHTTP(w ResponseWriter, r *Request) {
+	f(w, r)
+}
+```
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+)
+
+type dollars float32
+
+func (d dollars) String() string { return fmt.Sprintf("$%.2f", d) }
+
+func main() {
+	db := database{"shoes": 50, "socks": 5}
+	mux := http.NewServeMux()
+	// ⚠️http.HandlerFunc 为一个方法类型， HandlerFunc定义了类型的ServeHTTP方法，因此实现该类型即可实现handler方法
+	mux.Handle("/list", http.HandlerFunc(db.list))
+	mux.Handle("/price", http.HandlerFunc(db.price))
+	log.Fatal(http.ListenAndServe("localhost:8000", mux))
+}
+
+type database map[string]dollars
+
+func (db database) list(w http.ResponseWriter, req *http.Request) {
+	for item, price := range db {
+		fmt.Fprintf(w, "%s: %s\n", item, price)
+	}
+}
+
+func (db database) price(w http.ResponseWriter, req *http.Request) {
+	item := req.URL.Query().Get("item")
+	price, ok := db[item]
+	if !ok {
+		w.WriteHeader(http.StatusNotFound) // 404
+		fmt.Fprintf(w, "no such item: %q\n", item)
+		return
+	}
+	fmt.Fprintf(w, "%s\n", price)
+}
+```
+
+### Go接口编程的建议
+思想转变：强类型语言中，经常需要先定义接口，再实现具体方法，而Go中，先定义接口的行为是不必要的抽象，应该充分利用Go的隐式实现的特性，在有两个或者多个具体类型需要按统一的方式处理时才需要接口。
+> 因为接口仅在有两个或者多个类型满足的情况下，所以接口就必然会抽象掉具体的实现细节。这样的设计的结果会出现更简单和更少方法的接口。
+
+
+## goroutine 和通道
+Go 有两种并发风格，一种是共享内存多线程的传统模型，一种是goroutine和通道(channel)，他们支持通信顺序进程(Communication Sequential Process, CSP)，CSP是一种并发的模式，在不同的执行体(goroutine)之间传递值。
+
+### goroutine
+每一个并发执行的活动称为goroutine。语法上，一个go语句在普通的函数或者方法调用前加上`go`关键字前缀
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	// goroutine 调用
+	go spinner(100 * time.Millisecond)
+	const n = 45
+	fibN := fib(n) // slow
+	fmt.Printf("\rFibonacci(%d) = %d\n", n, fibN)
+}
+
+// 实现类似于pending 的等待
+func spinner(delay time.Duration) {
+	for {
+		for _, r := range `-\|/` {
+			fmt.Printf("\r%c", r)
+			time.Sleep(delay)
+		}
+	}
+}
+
+func fib(x int) int {
+	if x < 2 {
+		return x
+	}
+	return fib(x-1) + fib(x-2)
+}
+```
+
+### 通道
+通道是goroutine之间的连接，可以让一个goroutine发送特定值到另一个goroutine的通讯机制
+> 当通道复制或者作为参数传递到一个函数时，复制的是引用，这样调用者和被调用者都引用同一份数据结构
+
+```
+// 创建一个通道传递 int值
+ch := make(chan int)
+var x := 12
+// 通道发送
+ch <- x
+
+// 通道接收
+y = <- ch 
+
+// close函数关闭通道
+close(ch)
+
+
+func main() {
+    // 创建一个通道传递 int值
+	ch := make(chan int)
+	go f1(ch)
+    // 通道接收
+	y := <- ch
+	fmt.Println(y)
+}
+
+func f1(ch chan int) {
+	var x = 12
+    // 通道发送
+	ch <- x
+}
+```
+
+单向通道类型：即仅仅支持导出发送或接收操作的通道
+```
+// 只能发送的通道，允许发送不允许接收
+chan <- int 
+
+// 只允许接收的通道，不允许发送
+<- chan int
+
+func f1(out chan<- int){
+}
+
+func f2(in <-chan int){
+}
+```
+#### 缓存通道
+**无缓冲通道**上的发送及接收操作都是阻塞的
+1. 无缓冲通道的发送会阻塞，直到另一个goroutine在执行对应通道的接收操作才执行完成。
+2. 如果接收操作先执行，接收方goroutine将阻塞，直到另一个goroutine在同一通道上发送值。
+> 使用无缓冲通道进行的通信将导致发送和接收goroutine同步化
+```
+ch := make(chan int) // 无缓冲通道
+ch := make(chan int, 3) // 容量为3的缓冲通道
+```
+
+**缓冲通道**：有一个元素队列，队列的最大长度在创建的时候通过make的容量来设置，如果通道无goroutine接收，超过容量时将阻塞。
+> ⚠️不能将缓冲通道当成队列使用，若无元素进行接收，发送者有被永久阻塞的风险
+```
+ch := make(chan string, 2)
+ch <- "A"
+ch <- "B"
+// 超过容量阻塞
+ch <- "C"
+
+//获取通道的容量
+cap(ch)
+
+// 获取通道里面的元素数量
+len(ch)s
+```
+
+无缓冲的通道提供强同步保障，发送和接收都是阻塞的。而对于缓冲通道，发送和接收操作是解耦的
+> goroutine 泄漏：指的是一个无缓冲通道，发送响应没有 goroutine进行接收
+
+#### 管道
+
+通道可以用来连接goroutine，`chan`中一个输入一个输出，概念上叫做管道。
+
+```
+var ch1 = make(chan int)
+// 关闭管道
+close(ch1)
+
+// 接收操作的变种，可以检测是否接收成功。true接收成功，false表示当前的接收操作在一个关闭的并且读完的通道上
+x, ok <- ch1
+```
+
+管道通信关闭，无缓冲通道的阻塞传输，最终保障程序正常传输完成。
+```go
+package main
+
+import "fmt"
+
+//!+
+func counter(out chan<- int) {
+	for x := 0; x < 100; x++ {
+		out <- x
+	}
+	close(out)
+}
+
+func squarer(out chan<- int, in <-chan int) {
+	for v := range in {
+		out <- v * v
+	}
+	close(out)
+}
+
+func printer(in <-chan int) {
+	for v := range in {
+		fmt.Println(v)
+	}
+}
+
+func main() {
+	naturals := make(chan int)
+	squares := make(chan int)
+
+	go counter(naturals)
+	go squarer(squares, naturals)
+	printer(squares)
+}
+
+```
+
+
+### select多路复用
+select 关键字一直等待，直到某个通道通知有消息可以执行接收或发送。如果多个情况同时满足，select随机选择一个通道，这样保证每个通道都有同样的机会被选中
+>select 想保证非阻塞的通信，正常需要指定一个default方法，用于select轮训通道时的空转
+```
+select {
+  case <- ch1:
+    // ...
+  case x := <- ch2
+    // ...
+  case ch3 <- y
+    // ...
+  default: 
+    
+// 缓冲通道为1，偶数发送，奇数接收。如果使用的是一个缓冲通道，会导致程序报错deadlock，因为发送跟接收均无其他goroutine交互，程序认为导致死锁
+func selectSend() {
+    ch := make(chan int, 1)
+    for i := 0; i < 10; i++ {
+        select {
+        case x := <-ch:
+            fmt.Println(x)
+        case ch <- i:
+        }
+    }
+}
+```
+
+### 取消
+需要程序自己控制，比如在goroutine中，每次轮训是否取消的状态。在主函数中把需要创建goroutine的资源消耗掉，保证不再创建新的资源
+
+
+### 应用
+**计数信号量**：可以用来控制并发的量
+```
+var token = make(chan struct{}, 20)
+func f() {
+    tokens <- struct{}
+    
+    <- tokens
+}
+```
+
+一种main函数等待所有goroutine处理完逻辑再结束的控制
+```
+var finish = 0
+var done = make(chan string)
+
+// goroutine ++finish; done<- "deliver message"
+
+for ; finsh>0;finish-- {
+    <- done
+}
+```
+
+`fatal error: all goroutines are asleep - deadlock!`
+出现该错误，说明无缓冲队列存在无接收阻塞或者发送阻塞，而当前所有的goroutine 都已经结束。
+
+`tick := time.Tick(1 * time.Second)` 可以用于定期的发送事件
