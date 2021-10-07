@@ -8,9 +8,10 @@
 - 布尔值：true, false
 - 字符串
 
-> 取模的余数正负号总与被除数一致 `-5%3=-2  | -5%-3=-2 | 5%-3=2`\
-> 布尔值判断短路行为：运算符左边的判断已经能确定结果，则右边不计算\
-> 布尔值无法转换0，1
+> Tip:
+> 1. 取模的余数正负号总与被除数一致 `-5%3=-2  | -5%-3=-2 | 5%-3=2`
+> 2. 布尔值判断短路行为：运算符左边的判断已经能确定结果，则右边不计算
+> 3. 布尔值无法转换0，1
 
 ### 字符串
 ![image](https://github.com/rbmonster/file-storage/blob/main/golang-note/basic/stringconstruct.png)
@@ -48,16 +49,16 @@ s[0] = 'L' // 编译错误，字符串内部不可赋值
 const常量：保证在编译阶段就计算出表达式的值，并不需要等到运行时。本质上都属于基本类型如布尔型、字符串或数字
 ```
 const (
-a = 1
-b = 2
+    a = 1
+    b = 2
 )
 
 //同时声明，其他项目省略则复用前面的表达式
 const (
-	a = 1
-	b        // value 1
-	c = 2
-	d       // value 2
+    a = 1
+    b        // value 1
+    c = 2
+    d       // value 2
 )
 ```
 
@@ -66,30 +67,31 @@ const (
 package main
 
 import (
-	"fmt"
+    "fmt"
 )
 
 type Weekend int
 const (
-	Sunday Weekend = iota
-	Monday
-	Tuesday
-	Wednesday
-	Thursday
-	Friday
-	Saturday
+    Sunday Weekend = iota
+    Monday
+    Tuesday
+    Wednesday
+    Thursday
+    Friday
+    Saturday
 )
 
 func main() {
-	fmt.Println(Monday)
+    fmt.Println(Monday)
 }
 ```
 
 
 ### 数组
-数组声明：
+**数组声明**
+1. 数组支持直接`==`判断equal
+2. 数组必须指定数组大小
 ```
-
 var q [3]int = [3]int{1, 2, 3}
 //var q = [3]int{1, 2, 3} 
 for i,v := range q {
@@ -117,16 +119,16 @@ Go把数组和其他类型都看成值传递。在函数调用时候传入参数
 
 ```
 func main() {
-	zero(&p)
-	fmt.Println(p)
+    zero(&p)
+    fmt.Println(p)
 }
 
 // 数组的个数必须匹配
 func zero(ptr *[3]int) {
-	for i := range ptr {
-		ptr[i] = 0
-		fmt.Printf("%d %d \n", i, ptr[i])
-	}
+    for i := range ptr {
+        ptr[i] = 0
+        fmt.Printf("%d %d \n", i, ptr[i])
+    }
 }
 ```
 
@@ -141,11 +143,11 @@ slice 标识一个拥有相同类型元素的可变长度的序列。
 2. make 函数可以创建一个无名数组并返回它的一个slice。表达式`make([]T, len, cap)`
 
 ```
-s := []int{1,2,3,4,5}   // 切面的创建 未指定大小
-s2 := s[:3]             // 使用操作符创建
+s := []int{1,2,3,4,5}        // 切面的创建 未指定大小
+s2 := s[:3]                  // 使用操作符创建
 var s3 = make([]int, 4, 10)  // 使用make函数创建 
 array1 := [...]int{1,2,3,4,5} // 数组的创建，省略了大小
-array2 := [5]int{1,2,3,4,5} // 数组的创建，指定了大小
+array2 := [5]int{1,2,3,4,5}  // 数组的创建，指定了大小
 ```
 
 
@@ -161,13 +163,13 @@ package main
 import "fmt"
 
 func main() {
-	s := []int{1,2,3,4,5}
-	s2 := s[:3]
-	fmt.Println(s2)
-	extendLen := s2[:4]     // 在s2 slice的范围内扩展了slice到4位，最终比s2长
-	fmt.Println(extendLen)
-	extendCap := s2[:9]     // 超过capacity容量，运行报错
-	fmt.Println(extendCap)
+    s := []int{1,2,3,4,5}
+    s2 := s[:3]
+    fmt.Println(s2)
+    extendLen := s2[:4]     // 在s2 slice的范围内扩展了slice到4位，最终比s2长
+    fmt.Println(extendLen)
+    extendCap := s2[:9]     // 超过capacity容量，运行报错
+    fmt.Println(extendCap)
 }
 // output
 /**
@@ -188,15 +190,15 @@ package main
 
 import "fmt"
 func main() {
-	s := []int{0, 1, 2, 3, 4, 5}
-	reverse(s)
-	fmt.Println(s)
+    s := []int{0, 1, 2, 3, 4, 5}
+    reverse(s)
+    fmt.Println(s)
 }
 
 func reverse(s []int) {
-	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
-		s[i], s[j] = s[j], s[i]
-	}
+    for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+        s[i], s[j] = s[j], s[i]
+    }
 }
 
 ```
@@ -211,7 +213,7 @@ var s3 = append(s, s...)    // [0 1 2 3 4 5 0 1 2 3 4 5]
 
 
 ### map
-**map创建**：
+**map创建的两种方式**
 - 内置map函数创建map
 - map字面量创建
 ```
@@ -232,9 +234,9 @@ var graph = make(map[string]map[string]bool)
 **map操作**
 ```
 
-delete(args1, "alice")	 	// 删除map元素
+delete(args1, "alice")         // 删除map元素
 
-args1["bob"] = 12		// map 对于空值，直接返回默认值0
+args1["bob"] = 12        // map 对于空值，直接返回默认值0
 fmt.Println(args1)
 
 // 判断元素是否存在的两种方式
@@ -248,29 +250,31 @@ if !ok {
 
 ### JSON
 Go的数据结构转换为JSON称为marshal，Marshal生成一个字节slice。
-> 只有可导出的成员可以转换为JSON字段
-> MarshalIndent将输出格式化的结果 ''
-```
-func main() {
-	w := Wheel{
-		Circle: Circle{
-			Center: Point{ X: 1, Y:2},
-			Redius: 10,
-		},
-		Spokes: 12,
-	}
-	data, err := json.Marshal(w)
-	if err!=nil {
-		log.Fatalf("json marshaling fail: %s", err)
-	}
-	fmt.Printf("%s\n", data)
+> - 只有可导出的成员可以转换为JSON字段
+> - MarshalIndent将输出格式化的结果 ''
 
-	dataFormat, err := json.MarshalIndent(w, "","    ")
-	if err!=nil {
-		log.Fatalf("json marshaling fail: %s", err)
-	}
-	fmt.Printf("%s\n", dataFormat)
+```go
+func main() {
+    w := Wheel{
+        Circle: Circle{
+            Center: Point{ X: 1, Y:2},
+            Redius: 10,
+        },
+        Spokes: 12,
+    }
+    data, err := json.Marshal(w)
+    if err!=nil {
+        log.Fatalf("json marshaling fail: %s", err)
+    }
+    fmt.Printf("%s\n", data)
+    
+    dataFormat, err := json.MarshalIndent(w, "","    ")
+    if err!=nil {
+        log.Fatalf("json marshaling fail: %s", err)
+    }
+    fmt.Printf("%s\n", dataFormat)
 }
+
 // output
 {"Circle":{"Center":{"X":1,"Y":2},"Redius":10},"Spokes":12}
 {
@@ -287,19 +291,17 @@ func main() {
 
 unmarshal为将JSON字符串解码为Go数据结构的操作
 > unmarshal阶段JSON字段关联到Go结构成员的名称是忽略大小写的，结构体的成员必须首字母大写保证可访问进而转换成功
-```
-
+```go
 func main() {
-	jsonStr := "{\"Circle\":{\"Center\":{\"X\":1,\"Y\":2},\"Redius\":10},\"Spokes\":12}"
-	var w2 Wheel
-	// 参数传递指针
-	if err := json.Unmarshal([]byte(jsonStr), &w2) ;err != nil{
-		log.Fatalf("unmarshal error:%s",err)
-	}
-	fmt.Println(w2)
+    jsonStr := "{\"Circle\":{\"Center\":{\"X\":1,\"Y\":2},\"Redius\":10},\"Spokes\":12}"
+    var w2 Wheel
+    // 参数传递指针
+    if err := json.Unmarshal([]byte(jsonStr), &w2) ;err != nil{
+        log.Fatalf("unmarshal error:%s",err)
+    }
+    fmt.Println(w2)
 }
 ```
-
 
 ### 其他
 `json.Decoder` 流式解码器，用来依次从字节流里面解码出多个JSON实体
@@ -317,17 +319,17 @@ package main
 import "fmt"
 
 func main() {
-	var stack = []int {}
-	var nums =  [6]int {1,2,3,4,5,6}
-	for _,v := range nums{
-		stack = append(stack, v)	// 栈push操作
-	}
-	fmt.Println(stack)
-	for len(stack) != 0 {
-		var top = stack[len(stack)-1]	// 栈顶元素
-		fmt.Println(top)    
-		stack = stack[:len(stack)-1]  // 栈pop操作
-	}
+    var stack = []int {}
+    var nums =  [6]int {1,2,3,4,5,6}
+    for _,v := range nums{
+        stack = append(stack, v)    // 栈push操作
+    }
+    fmt.Println(stack)
+    for len(stack) != 0 {
+        var top = stack[len(stack)-1]    // 栈顶元素
+        fmt.Println(top)    
+        stack = stack[:len(stack)-1]  // 栈pop操作
+    }
 }
 ```
 
@@ -341,31 +343,30 @@ import "fmt"
 var graph = make(map[string]map[string]bool)
 
 func addEdge(from, to string) {
-	edges := graph[from]
-	if edges == nil {
-		edges = make(map[string]bool)
-		graph[from] = edges
-	}
-	edges[to] = true
+    edges := graph[from]
+    if edges == nil {
+        edges = make(map[string]bool)
+        graph[from] = edges
+    }
+    edges[to] = true
 }
 
 func hasEdge(from, to string) bool {
-	return graph[from][to]
+    return graph[from][to]
 }
 
 func main() {
-	addEdge("a", "b")
-	addEdge("c", "d")
-	addEdge("a", "d")
-	addEdge("d", "a")
-	fmt.Println(hasEdge("a", "b"))
+    addEdge("a", "b")
+    addEdge("c", "d")
+    addEdge("a", "d")
+    addEdge("d", "a")
+    fmt.Println(hasEdge("a", "b"))
 }
 ```
 
 
 ## 程序结构
 
-声明：
 - 变量 var
 - 常量 const
 - 类型 type
@@ -376,7 +377,7 @@ func main() {
 `var name type = expression`\
 类型type 及 表达式expression 部分可以省略一个
 
-```
+```go
 var a = ""
 fmt.Println(a)
 
@@ -393,7 +394,7 @@ fmt.Println(c,f,s)
 **短变量声明**：作为变量声明的一个可选形式用来声明和初始化局部变量\
 `name := expression` 
 
-```
+```go
 
 i := 100
 j, k := 10, 20
@@ -408,7 +409,7 @@ resp1, err := http.Get(url)
 
 **指针**：变量存储值的地方，指针的值为一个变量的地址。
 
-```
+```go
 x := 1
 p := &x
 fmt.Println(x, *p, p)  // 1 1 0xc00001e070
@@ -418,7 +419,7 @@ fmt.Println(x, *p, p) //  3 3 0xc00001e070
 
 **new函数创建变量**: 初始化为T类型的零值，并返回其地址
 
-```
+```go
 p := new(int)
 q := new(int)
 fmt.Println(p == q)  // false
@@ -427,8 +428,8 @@ fmt.Println(*p == *q) // true
 
 **多重赋值**
 
-```
-v, ok = m[key]
+```go
+v, ok = m[key]   // 获取值，返回值及是否获取成功结果
 
 _, err = io.Copy(dst, src) // _丢弃返回值
 ```
@@ -438,20 +439,20 @@ _, err = io.Copy(dst, src) // _丢弃返回值
 - 局部变量：动态的生命周期，变量一直生存到它变得不可访问，这时它占用的空间被回收
 > 垃圾回收思路：每一个包级别的变量，以及每一个当前执行函数的局部变量，可以作为追溯该变量的路径源头，通过指针和其他方式的引用都无法找到变量，那么说明变量不可访问，因此可以进行回收。
 
-```
+```go
 // g函数返回，变量y回收
 func g() {
-	y := new(int)
-	*y = 1
+    y := new(int)
+    *y = 1
 }
 
 
 // f函数执行完成还可以用global变量访问，x从f函数逃逸
 var global *int
 func f() {
-	var x int
-	x = 1
-	global = &x
+    var x int
+    x = 1
+    global = &x
 }
 ```
 
@@ -461,7 +462,6 @@ func f() {
 type声明定义一个新的明明类型，它和某个已有类型使用相同的底层类型
 
 ```go
-
 package tempconv
 
 import "fmt"
@@ -471,34 +471,31 @@ type Celsius float64
 type Fahrenheit float64
 
 const (
-	AbsoluteZeroC Celsius = -273.15
-	FreezingC     Celsius = 0
-	BoilingC      Celsius = 100
+    AbsoluteZeroC Celsius = -273.15
+    FreezingC     Celsius = 0
+    BoilingC      Celsius = 100
 )
 
 func (c Celsius) String() string    { return fmt.Sprintf("%g°C", c) }
 func (f Fahrenheit) String() string { return fmt.Sprintf("%g°F", f) }
 ```
 
-
-
 #### 结构体
 **结构体**：将零个或多个任意类型变量组合的聚合数据类型
 > 结构体的成员变量名称是首字母答谢，那么表示该变量可以导出
 
-
 #### 结构体初始化
 支持两种初始化，一种按顺序，一种指定变量名.
-```
+```go
 type Point struct {
-	X, Y int
+    X, Y int
 }
 
 func main() {
-	var p1 = Point{1,2}
-	p2 := Point{X:3, Y:4}  
-	p3 := Point{Y:4}    // {0, 4}
-	fmt.Println(p1, p2, p3)
+    var p1 = Point{1,2}
+    p2 := Point{X:3, Y:4}  
+    p3 := Point{Y:4}    // {0, 4}
+    fmt.Println(p1, p2, p3)
 }
 ```
 
@@ -509,33 +506,33 @@ package main
 import "fmt"
 
 type Point struct {
-	X, Y int
+    X, Y int
 }
 
 type Circle struct {
-	Center Point
-	Redius int
+    Center Point
+    Redius int
 }
 
 type Wheel struct {
-	Circle Circle
-	Spokes int
+    Circle Circle
+    Spokes int
 }
 
 func main() {
-	// 第一种创建方式
-	w := Wheel{Circle{Point{X: 8, Y: 9}, 10}, 12}
-	// 第二种创建方式
-	w2 := Wheel{
-		Circle: Circle{
-			Center: Point{ X: 1, Y:2},
-			Redius: 10,
-		},
-		Spokes: 12,
-	}
-	fmt.Printf("%#v\n", w2)
-	// 嵌套结构体的访问
-	fmt.Println(w.Circle.Center.X)
+    // 第一种创建方式
+    w := Wheel{Circle{Point{X: 8, Y: 9}, 10}, 12}
+    // 第二种创建方式
+    w2 := Wheel{
+        Circle: Circle{
+            Center: Point{ X: 1, Y:2},
+            Redius: 10,
+        },
+        Spokes: 12,
+    }
+    fmt.Printf("%#v\n", w2)
+    // 嵌套结构体的访问
+    fmt.Println(w.Circle.Center.X)
 }
 
 ```
@@ -547,43 +544,43 @@ package treesort
 
 //!+
 type tree struct {
-	value       int
-	left, right *tree
+    value       int
+    left, right *tree
 }
 
 // Sort sorts values in place.
 func TreeSort(values []int) {
-	var root *tree
-	for _, v := range values {
-		root = add(root, v)
-	}
-	appendValues(values[:0], root)
+    var root *tree
+    for _, v := range values {
+        root = add(root, v)
+    }
+    appendValues(values[:0], root)
 }
 
 // appendValues appends the elements of t to values in order
 // and returns the resulting slice.
 func appendValues(values []int, t *tree) []int {
-	if t != nil {
-		values = appendValues(values, t.left)
-		values = append(values, t.value)
-		values = appendValues(values, t.right)
-	}
-	return values
+    if t != nil {
+        values = appendValues(values, t.left)
+        values = append(values, t.value)
+        values = appendValues(values, t.right)
+    }
+    return values
 }
 
 func add(t *tree, value int) *tree {
-	if t == nil {
-		// Equivalent to return &tree{value: value}.
-		t = new(tree)
-		t.value = value
-		return t
-	}
-	if value < t.value {
-		t.left = add(t.left, value)
-	} else {
-		t.right = add(t.right, value)
-	}
-	return t
+    if t == nil {
+        // Equivalent to return &tree{value: value}.
+        t = new(tree)
+        t.value = value
+        return t
+    }
+    if value < t.value {
+        t.left = add(t.left, value)
+    } else {
+        t.right = add(t.right, value)
+    }
+    return t
 }
 ```
 
@@ -597,11 +594,11 @@ func add(t *tree, value int) *tree {
 package basic
 
 func Fib(n int) int {
-	var x,y = 0, 1
-	for i := 2; i <= n; i++ {
-		x, y = y, x+y
-	}
-	return y
+    var x,y = 0, 1
+    for i := 2; i <= n; i++ {
+        x, y = y, x+y
+    }
+    return y
 }
 ```
 
@@ -609,13 +606,13 @@ func Fib(n int) int {
 package main
 
 import (
-	"fmt"
-	"golang-note/src/basic"
+    "fmt"
+    "golang-note/src/basic"
 )
 
 func main() {
-	var res = basic.Fib(100)
-	fmt.Println(res)
+    var res = basic.Fib(100)
+    fmt.Println(res)
 }
 
 ```
@@ -632,17 +629,17 @@ func main() {
 package main
 
 import (
-	"fmt"
-	"golang-note/src/basic"
+    "fmt"
+    "golang-note/src/basic"
 )
 
 func init() {
-	fmt.Println("initing")
+    fmt.Println("initing")
 }
 
 func main() {
-	var res = basic.Fib(10)
-	fmt.Println(res)
+    var res = basic.Fib(10)
+    fmt.Println(res)
 }
 
 ```
@@ -657,15 +654,15 @@ package main
 import "fmt"
 
 func main() {
-	x := "hello!"
-	for i := 0; i < len(x); i++ {
-		x :=x[i]
-		if x != '!' {
-			x := x+ 'A'- 'a'
-			fmt.Println(x)
-		}
-	}
-	fmt.Println(x)
+    x := "hello!"
+    for i := 0; i < len(x); i++ {
+        x :=x[i]
+        if x != '!' {
+            x := x+ 'A'- 'a'
+            fmt.Println(x)
+        }
+    }
+    fmt.Println(x)
 }
 /**
 output =>
@@ -684,22 +681,22 @@ else中仍可以使用if中的声明
 package main
 
 import (
-	"fmt"
-	"math/rand"
+    "fmt"
+    "math/rand"
 )
 
 func main() {
-	if x := f(); x == 0 {
-		fmt.Println("x match zero")
-	} else if y := f(); y == x {
-		fmt.Println("range num tow match")
-	} else {
-		fmt.Println("nomatch num:", x, y)
-	}
+    if x := f(); x == 0 {
+        fmt.Println("x match zero")
+    } else if y := f(); y == x {
+        fmt.Println("range num tow match")
+    } else {
+        fmt.Println("nomatch num:", x, y)
+    }
 }
 
 func f() int  {
-	return rand.Intn(10)
+    return rand.Intn(10)
 }
 
 
@@ -718,25 +715,25 @@ func name(parameter-list) (result-list) {
 
 // 指定每个参数
 func add(x int, y int) int {
-	return x+y
+    return x+y
 }
 
 // 省略型参声明，指定了返回值的参数
 // 一个函数如果有命名的返回值，可以省略return语句的操作数
 func sub(x, y int) (z int) {
-	z = x-y
-	return
+    z = x-y
+    return
 }
 
 func first(x int, _ int) int {
-	return x
+    return x
 }
 ```
 
 **多返回值**
 ```
 func HourMinSec(t time.Time) (hour, minute, second int) {
-	return t.Hour(), t.Minute(), t.Second()
+    return t.Hour(), t.Minute(), t.Second()
 }
 ```
 
@@ -747,22 +744,22 @@ func HourMinSec(t time.Time) (hour, minute, second int) {
 package main
 
 import (
-	"fmt"
+    "fmt"
 )
 
 func main() {
-	x := []int { 1,2,3,4,5,6}
-	function(x, func(s []int) {
-		for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
-			s[i], s[j] = s[j], s[i]
-		}
-	})
-	fmt.Println(x)
+    x := []int { 1,2,3,4,5,6}
+    function(x, func(s []int) {
+        for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+            s[i], s[j] = s[j], s[i]
+        }
+    })
+    fmt.Println(x)
 }
 
 func function(x []int, reverse func(s [] int)) {
-	fmt.Println(x)
-	reverse(x)
+    fmt.Println(x)
+    reverse(x)
 }
 ```
 
@@ -770,11 +767,11 @@ func function(x []int, reverse func(s [] int)) {
 > 函数变量类似于使用闭包方式实现的变量
 ```
 func squares() func() int {
-	var x int
-	return func() int {
-		x++
-		return x * x
-	}
+    var x int
+    return func() int {
+        x++
+        return x * x
+    }
 }
 ```
 
@@ -795,11 +792,11 @@ for _,rmdir := range rmdirs {
 **变长函数**：使用省略号代表参数，正常用于格式化中
 ```
 func sum(val ...int) int {
-	total := 0
-	for v := range val {
-		total +=v
-	}
-	return total
+    total := 0
+    for v := range val {
+        total +=v
+    }
+    return total
 }
 ```
 
@@ -810,21 +807,21 @@ func sum(val ...int) int {
 package main
 
 import (
-	"log"
-	"time"
+    "log"
+    "time"
 )
 
 func bigSLowOperation() {
-	// 延迟调用trace函数，等待该方法结束之后，再调用trace返回的函数参数执行，实现记录方法执行时间的效果
-	defer trace("bigSLowOperation") ()
-	time.Sleep(3*time.Second)
+    // 延迟调用trace函数，等待该方法结束之后，再调用trace返回的函数参数执行，实现记录方法执行时间的效果
+    defer trace("bigSLowOperation") ()
+    time.Sleep(3*time.Second)
 }
 
 // defer调用的时候，前两行语句已经执行
 func trace(msg string) func() {
-	start := time.Now()
-	log.Printf("enter %s", msg)
-	return func() { log.Printf("exit %s (%s)", msg, time.Since(start))}
+    start := time.Now()
+    log.Printf("enter %s", msg)
+    return func() { log.Printf("exit %s (%s)", msg, time.Since(start))}
 }
 ```
 
@@ -860,7 +857,7 @@ Go语言中的面向对象编程：对象就是一个简单的值活着变量，
 ```
 // 相比函数在方法名之前增加了参数，表示该方法的接受者
 func (p Point) Distance(q Point) float64 {
-	return math.Hypot(p.X - q.X, p.Y - q.Y)
+    return math.Hypot(p.X - q.X, p.Y - q.Y)
 }
 
 func main() {
@@ -870,9 +867,9 @@ func main() {
     fmt.Println(q.Distance(p))
     
     // 指定方法参数
-	dis := p.Distance
-	res := dis(q.Point)
-	fmt.Println(res)
+    dis := p.Distance
+    res := dis(q.Point)
+    fmt.Println(res)
 }
 ```
 
@@ -896,10 +893,10 @@ func (p *Point) ScaleBy(factor float64) {
 
 // 该方法支持nil作为方法接收者
 func (v Values) Get(key string) string {
-	if vs := v[key]; len(vs) > 0 {
-		return vs[0]
-	}
-	return ""
+    if vs := v[key]; len(vs) > 0 {
+        return vs[0]
+    }
+    return ""
 }
 ```
 
@@ -911,33 +908,33 @@ func (v Values) Get(key string) string {
 package main
 
 import (
-	"fmt"
-	"math"
+    "fmt"
+    "math"
 )
 
 type Point struct {
-	X, Y float64
+    X, Y float64
 }
 
 type Circle struct {
-	Point
-	Redius int
+    Point
+    Redius int
 }
 
 func main() {
-	c1 := Circle{Point{1,2}, 3}
-	c2 := Circle{Point{3,4}, 1}
-	// 编译器会使用包装方法调用，Point的Distance方法
-	fmt.Println(c1.Distance(c2.Point))
+    c1 := Circle{Point{1,2}, 3}
+    c2 := Circle{Point{3,4}, 1}
+    // 编译器会使用包装方法调用，Point的Distance方法
+    fmt.Println(c1.Distance(c2.Point))
 }
 
 func (p *Point) ScaleBy(factor float64) {
-	p.X *= factor
-	p.Y *= factor
+    p.X *= factor
+    p.Y *= factor
 }
 
 func (p Point) Distance(q Point) float64 {
-	return math.Hypot(p.X - q.X, p.Y - q.Y)
+    return math.Hypot(p.X - q.X, p.Y - q.Y)
 }
 ```
 
@@ -1015,7 +1012,7 @@ if !ok {
 package http
 
 type Handler interface {
-	ServeHTTP(w ResponseWriter, r *Request)
+    ServeHTTP(w ResponseWriter, r *Request)
 }
 
 func ListenAndServe(address string, h Handler) error
@@ -1027,14 +1024,14 @@ database类型实现了handler接口的方法
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
+    "fmt"
+    "log"
+    "net/http"
 )
 
 func main() {
-	db := database{"shoes": 50, "socks": 5}
-	log.Fatal(http.ListenAndServe("localhost:8000", db))
+    db := database{"shoes": 50, "socks": 5}
+    log.Fatal(http.ListenAndServe("localhost:8000", db))
 }
 
 type dollars float32
@@ -1045,9 +1042,9 @@ func (d dollars) String() string { return fmt.Sprintf("$%.2f", d) }
 
 
 func (db database) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	for item, price := range db {
-		fmt.Fprintf(w, "%s: %s\n", item, price)
-	}
+    for item, price := range db {
+        fmt.Fprintf(w, "%s: %s\n", item, price)
+    }
 }
 
 ```
@@ -1059,16 +1056,16 @@ type HandlerFunc func(ResponseWriter, *Request)
 
 // ServeHTTP calls f(w, r).
 func (f HandlerFunc) ServeHTTP(w ResponseWriter, r *Request) {
-	f(w, r)
+    f(w, r)
 }
 ```
 ```go
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
+    "fmt"
+    "log"
+    "net/http"
 )
 
 type dollars float32
@@ -1076,31 +1073,31 @@ type dollars float32
 func (d dollars) String() string { return fmt.Sprintf("$%.2f", d) }
 
 func main() {
-	db := database{"shoes": 50, "socks": 5}
-	mux := http.NewServeMux()
-	// ⚠️http.HandlerFunc 为一个方法类型， HandlerFunc定义了类型的ServeHTTP方法，因此实现该类型即可实现handler方法
-	mux.Handle("/list", http.HandlerFunc(db.list))
-	mux.Handle("/price", http.HandlerFunc(db.price))
-	log.Fatal(http.ListenAndServe("localhost:8000", mux))
+    db := database{"shoes": 50, "socks": 5}
+    mux := http.NewServeMux()
+    // ⚠️http.HandlerFunc 为一个方法类型， HandlerFunc定义了类型的ServeHTTP方法，因此实现该类型即可实现handler方法
+    mux.Handle("/list", http.HandlerFunc(db.list))
+    mux.Handle("/price", http.HandlerFunc(db.price))
+    log.Fatal(http.ListenAndServe("localhost:8000", mux))
 }
 
 type database map[string]dollars
 
 func (db database) list(w http.ResponseWriter, req *http.Request) {
-	for item, price := range db {
-		fmt.Fprintf(w, "%s: %s\n", item, price)
-	}
+    for item, price := range db {
+        fmt.Fprintf(w, "%s: %s\n", item, price)
+    }
 }
 
 func (db database) price(w http.ResponseWriter, req *http.Request) {
-	item := req.URL.Query().Get("item")
-	price, ok := db[item]
-	if !ok {
-		w.WriteHeader(http.StatusNotFound) // 404
-		fmt.Fprintf(w, "no such item: %q\n", item)
-		return
-	}
-	fmt.Fprintf(w, "%s\n", price)
+    item := req.URL.Query().Get("item")
+    price, ok := db[item]
+    if !ok {
+        w.WriteHeader(http.StatusNotFound) // 404
+        fmt.Fprintf(w, "no such item: %q\n", item)
+        return
+    }
+    fmt.Fprintf(w, "%s\n", price)
 }
 ```
 
@@ -1142,33 +1139,33 @@ Go 有两种并发风格，一种是共享内存多线程的传统模型，一�
 package main
 
 import (
-	"fmt"
-	"time"
+    "fmt"
+    "time"
 )
 
 func main() {
-	// goroutine 调用
-	go spinner(100 * time.Millisecond)
-	const n = 45
-	fibN := fib(n) // slow
-	fmt.Printf("\rFibonacci(%d) = %d\n", n, fibN)
+    // goroutine 调用
+    go spinner(100 * time.Millisecond)
+    const n = 45
+    fibN := fib(n) // slow
+    fmt.Printf("\rFibonacci(%d) = %d\n", n, fibN)
 }
 
 // 实现类似于pending 的等待
 func spinner(delay time.Duration) {
-	for {
-		for _, r := range `-\|/` {
-			fmt.Printf("\r%c", r)
-			time.Sleep(delay)
-		}
-	}
+    for {
+        for _, r := range `-\|/` {
+            fmt.Printf("\r%c", r)
+            time.Sleep(delay)
+        }
+    }
 }
 
 func fib(x int) int {
-	if x < 2 {
-		return x
-	}
-	return fib(x-1) + fib(x-2)
+    if x < 2 {
+        return x
+    }
+    return fib(x-1) + fib(x-2)
 }
 ```
 
@@ -1192,17 +1189,17 @@ close(ch)
 
 func main() {
     // 创建一个通道传递 int值
-	ch := make(chan int)
-	go f1(ch)
+    ch := make(chan int)
+    go f1(ch)
     // 通道接收
-	y := <- ch
-	fmt.Println(y)
+    y := <- ch
+    fmt.Println(y)
 }
 
 func f1(ch chan int) {
-	var x = 12
+    var x = 12
     // 通道发送
-	ch <- x
+    ch <- x
 }
 ```
 
@@ -1270,32 +1267,32 @@ import "fmt"
 
 //!+
 func counter(out chan<- int) {
-	for x := 0; x < 100; x++ {
-		out <- x
-	}
-	close(out)
+    for x := 0; x < 100; x++ {
+        out <- x
+    }
+    close(out)
 }
 
 func squarer(out chan<- int, in <-chan int) {
-	for v := range in {
-		out <- v * v
-	}
-	close(out)
+    for v := range in {
+        out <- v * v
+    }
+    close(out)
 }
 
 func printer(in <-chan int) {
-	for v := range in {
-		fmt.Println(v)
-	}
+    for v := range in {
+        fmt.Println(v)
+    }
 }
 
 func main() {
-	naturals := make(chan int)
-	squares := make(chan int)
+    naturals := make(chan int)
+    squares := make(chan int)
 
-	go counter(naturals)
-	go squarer(squares, naturals)
-	printer(squares)
+    go counter(naturals)
+    go squarer(squares, naturals)
+    printer(squares)
 }
 
 ```
@@ -1486,19 +1483,19 @@ import "testing"
 
 func TestWheel_Write(t *testing.T) {
 
-	w2 := Wheel{
-		Circle: Circle{
-			Point: Point{ X: 1, Y:2},
-			Redius: 10,
-		},
-		Spokes: 12,
-		owner: "12123",
-	}
+    w2 := Wheel{
+        Circle: Circle{
+            Point: Point{ X: 1, Y:2},
+            Redius: 10,
+        },
+        Spokes: 12,
+        owner: "12123",
+    }
 
-	_, err := w2.Write([]byte("asdfa"))
-	if err!= nil {
-		t.Errorf("error")
-	}
+    _, err := w2.Write([]byte("asdfa"))
+    if err!= nil {
+        t.Errorf("error")
+    }
 }
 ```
 
@@ -1513,21 +1510,21 @@ Benchmark开头的测试是用来测试某些操作的性能，是在一定的�
 
 ```
 func BenchmarkWheel_Write(b *testing.B) {
-	w2 := Wheel{
-		Circle: Circle{
-			Point: Point{ X: 1, Y:2},
-			Redius: 10,
-		},
-		Spokes: 12,
-		owner: "12123",
-	}
-	// b.N 表示调用N次
-	for i := 0; i < b.N; i++ {
-		_, err := w2.Write([]byte("asdfa"))
-		if err!= nil {
-			b.Errorf("error")
-		}
-	}
+    w2 := Wheel{
+        Circle: Circle{
+            Point: Point{ X: 1, Y:2},
+            Redius: 10,
+        },
+        Spokes: 12,
+        owner: "12123",
+    }
+    // b.N 表示调用N次
+    for i := 0; i < b.N; i++ {
+        _, err := w2.Write([]byte("asdfa"))
+        if err!= nil {
+            b.Errorf("error")
+        }
+    }
 }
 
 // output ~
