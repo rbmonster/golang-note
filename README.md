@@ -204,7 +204,7 @@ func reverse(s []int) {
 ```
 
 **append函数**：用来将元素追加到slice后面
-```
+```go
 s := []int{0, 1, 2, 3, 4, 5}
 var s2 = append(s, 1,2,3)   // [0 1 2 3 4 5 1 2 3]
 var s3 = append(s, s...)    // [0 1 2 3 4 5 0 1 2 3 4 5]
@@ -216,7 +216,7 @@ var s3 = append(s, s...)    // [0 1 2 3 4 5 0 1 2 3 4 5]
 **map创建的两种方式**
 - 内置map函数创建map
 - map字面量创建
-```
+```go
 arg := make(map[string]int)
 arg["alice"] = 32
 fmt.Println(arg)
@@ -232,8 +232,7 @@ var graph = make(map[string]map[string]bool)
 
 
 **map操作**
-```
-
+```go
 delete(args1, "alice")         // 删除map元素
 
 args1["bob"] = 12        // map 对于空值，直接返回默认值0
@@ -608,7 +607,7 @@ package main
 
 import (
     "fmt"
-    "golang-note/src/basic"
+    basic "golang-note/src/basic"
 )
 
 func main() {
@@ -631,89 +630,27 @@ package main
 
 import (
     "fmt"
-    "golang-note/src/basic"
 )
 
 func init() {
     fmt.Println("initing")
 }
-
-func main() {
-    var res = basic.Fib(10)
-    fmt.Println(res)
-}
-
-```
-
-### 作用域
-声明的作用域：指用到变量时所声明名字的源代码段
-
-函数中，词法块嵌套，一个局部变量声明可能覆盖另一个。
-```go
-package main
-
-import "fmt"
-
-func main() {
-    x := "hello!"
-    for i := 0; i < len(x); i++ {
-        x :=x[i]
-        if x != '!' {
-            x := x+ 'A'- 'a'
-            fmt.Println(x)
-        }
-    }
-    fmt.Println(x)
-}
-/**
-output =>
-72
-69
-76
-76
-79
- */
-```
-
-
-**隐式词法块的作用域**
-else中仍可以使用if中的声明
-```go
-package main
-
-import (
-    "fmt"
-    "math/rand"
-)
-
-func main() {
-    if x := f(); x == 0 {
-        fmt.Println("x match zero")
-    } else if y := f(); y == x {
-        fmt.Println("range num tow match")
-    } else {
-        fmt.Println("nomatch num:", x, y)
-    }
-}
-
-func f() int  {
-    return rand.Intn(10)
-}
-
-
-/**
-output:
-nomatch num: 1 7
-*/
 ```
 
 ### 函数
-函数的形式：
+**函数的形式demo**
+
 ```
+// name 函数名称
+// parameter-list 参数list
+// result-list 返回的参数list
 func name(parameter-list) (result-list) {
     body
 }
+```
 
+示例
+```go
 // 指定每个参数
 func add(x int, y int) int {
     return x+y
@@ -732,7 +669,7 @@ func first(x int, _ int) int {
 ```
 
 **多返回值**
-```
+```go
 func HourMinSec(t time.Time) (hour, minute, second int) {
     return t.Hour(), t.Minute(), t.Second()
 }
@@ -740,7 +677,6 @@ func HourMinSec(t time.Time) (hour, minute, second int) {
 
 #### 函数变量
 函数变量使得函数不仅将数据进行参数化，还将函数行为当作参数进行传递。
-
 ```go
 package main
 
@@ -758,13 +694,14 @@ func main() {
     fmt.Println(x)
 }
 
+// reverse 作为一个方法参数进行传递
 func function(x []int, reverse func(s [] int)) {
     fmt.Println(x)
     reverse(x)
 }
 ```
 
-**匿名函数**：func关键字后面没有函数的名称，这种方式定义的函数可以获取到整个词法环境
+**匿名函数**：func关键字后面没有函数的名称，这种方式定义的函数可以获取到整个词法环境。
 > 函数变量类似于使用闭包方式实现的变量
 ```
 func squares() func() int {
@@ -776,8 +713,8 @@ func squares() func() int {
 }
 ```
 
-闭包易忽略的问题：⚠️捕获迭代变量
-```
+闭包易忽略的问题：⚠️捕获迭代变量，变量在迭代中一直值变动
+```go
 var rmdirs []func() 
 for _,dir := range tempDirs() {
     os.MkdirAll(dir, 0755)
@@ -790,8 +727,8 @@ for _,rmdir := range rmdirs {
 }
 ```
 
-**变长函数**：使用省略号代表参数，正常用于格式化中
-```
+**变长函数**：使用省略号代表参数，正常用于格式化的输出
+```go
 func sum(val ...int) int {
     total := 0
     for v := range val {
@@ -802,7 +739,8 @@ func sum(val ...int) int {
 ```
 
 #### 延迟函数
-延迟函数defer就是一个普通函数活着方法调用。无论是正常调用执行return或函数执行完毕，还是不正常的情况如宕机，**实际的调用推迟到⚠️包含defer语句函数执行完毕**之后才执行。
+延迟函数defer就是一个普通函数或者方法调用。无论是正常调用执行return或函数执行完毕，还是不正常的情况如宕机。\
+**实际的调用推迟到⚠️包含defer语句函数执行完毕**之后才执行。
 
 ```go
 package main
@@ -827,7 +765,7 @@ func trace(msg string) func() {
 ```
 
 互斥锁与延迟函数的应用
-```
+```go
 var mu sync.Mutex
 var m = make(map[string] int)
 
@@ -846,17 +784,17 @@ func double(x int) (result int) {
 ```
 
 defer语句经常适用于成对的操作，比如打开和关闭，连接和断开，加锁和解锁\
-不适合延迟函数的场景： 如本地文件关闭，因为文件系统的修改，经常在关闭文件的时候才做文件检查。
+**不适合延迟函数的场景**：如本地文件关闭，因为文件系统的修改，经常在关闭文件的时候才做文件检查。
 
 
 ### 方法
-Go语言中的面向对象编程：对象就是一个简单的值活着变量，并且拥有其方法，而**方法是某种特定类型的函数**。面向对象编程就是使用方法来描述每个数据结构的属性和操作。
+Go语言中的面向对象编程：对象就是一个简单的值或者变量，并且拥有其方法，而**方法是某种特定类型的函数**。面向对象编程就是使用方法来描述每个数据结构的属性和操作。
 
 类型拥有的所有方法名必须都是唯一的，但不同的类型可以使用相同的方法名。无java中重载的特性。
 
 方法声明：
-```
-// 相比函数在方法名之前增加了参数，表示该方法的接受者
+```go
+// 相比函数在方法名之前增加了参数(p Point)，表示该方法的接受者
 func (p Point) Distance(q Point) float64 {
     return math.Hypot(p.X - q.X, p.Y - q.Y)
 }
@@ -879,7 +817,7 @@ func main() {
 #### 指针方法
 指针方法调用，可以直接使用类型的方法调用，编译器会进行变量的&p的隐式转换
 > `nil`也可以作为一个方法的接收者，比如map和slice类型中的应用。
-```
+```go
 func main() {
     p := Point{1,2}
     p.ScaleBy(12)
@@ -905,7 +843,7 @@ func (v Values) Get(key string) string {
 嵌套的结构体类型组成复杂的类型，**内嵌的方法都被纳入到上层类型**中。调用的时候编译器会进行方法包装再调用
 > 编译器处理方法调用顺序：直接声明方法 -> 内嵌字段方法 -> 内嵌字段的内嵌字段方法...   遇到同名方法直接报错
 
-```
+```go
 package main
 
 import (
@@ -939,25 +877,21 @@ func (p Point) Distance(q Point) float64 {
 }
 ```
 
-#### 封装
-Go语言只有一种方式控制命名的可见行：定义的时候首字母大写的标识符是可以从包中导出的，而首字母没有大写不导出。
-
-封装三个优点
-1. 防止使用者肆意修改对象内变量。
-2. 隐藏实现细节防止使用方依赖的属性发生改变。
-3. 使用者不能直接修改，因此不需要更多的语句来检查变量的值。
-
-
 ### 接口
 
 #### 接口定义
 Go语言的接口独特之处在于接口是隐式实现的。对于一个具体的类型，无须声明它实现了哪些接口，只要提供接口所必须的方法即可。
 
-接口是一种抽象类型，一个具体类型只要实现了接口的所有方法，就该接口参数就可以指向该类型。这种把一种类型替换，为满足同一接口的另一种类型的特性称为可取代性。
-> 一个接口类型定义了一套方法，如果一个具体类型要实现该接口，那么必须实现接口类型定义中的所有方法。
-> 空接口类型对实现类型没有任何要求，所以可以把任何之都赋给空接口类型
+```go
 
 ```
+
+
+接口是一种抽象类型，一个具体类型只要实现了接口的所有方法，就该接口参数就可以指向该类型。这种把一种类型替换，为满足同一接口的另一种类型的特性称为可取代性。
+> 一个接口类型定义了一套方法，如果一个具体类型要实现该接口，那么必须实现接口类型定义中的所有方法。
+> 空接口类型对实现类型没有任何要求，所以可以把任何之都赋给空接口类型`var any interface{}`
+
+```go
 var w io.Writer
 w = os.Stdout
 w = new(bytes.Buffer)
@@ -975,7 +909,7 @@ any = map[string]int{"123": 3}
 ![image](https://github.com/rbmonster/file-storage/blob/main/golang-note/basic/interfacevalue.png)
 
 图中分别为声明一个接口及为接口赋值
-```
+```go
 var w io.Writer
 w = os.Stdout
 ```
@@ -988,7 +922,7 @@ w = os.Stdout
 > 如果断言类型是个具体类型，那么类型断言会检查x的动态类型是否就是T\
 > 如果断言类型是接口类型，那么类型断言检查x的动态类型是否满足T\
 > 断言中T是否使用`*` 在于支持的类型实现的方法，是否为指针方法，当然编译器会进行优化
-```
+```go
 var w io.Writer
 w = os.Stdout
 f := w.(*os.File)
@@ -1000,7 +934,6 @@ if !ok {
     fmt.Println(c)
 }
 ```
-
 
 类型分支：
 1. 子类型多态：如http.Handler与sort.Interface 等接口，各种方法突出了满足这个接口的具体类型，但隐藏了各个具体类型的布局和各自特有的功能。
@@ -1106,6 +1039,77 @@ func (db database) price(w http.ResponseWriter, req *http.Request) {
 #### Go接口编程的建议
 思想转变：强类型语言中，经常需要先定义接口，再实现具体方法，而Go中，先定义接口的行为是不必要的抽象，应该充分利用Go的隐式实现的特性，在有两个或者多个具体类型需要按统一的方式处理时才需要接口。
 > 因为接口仅在有两个或者多个类型满足的情况下，所以接口就必然会抽象掉具体的实现细节。这样的设计的结果会出现更简单和更少方法的接口。
+
+
+### 封装性
+Go语言只有一种方式控制命名的可见行：定义的时候首字母大写的标识符是可以从包中导出的，而首字母没有大写不导出。
+
+封装三个优点
+1. 防止使用者肆意修改对象内变量。
+2. 隐藏实现细节防止使用方依赖的属性发生改变。
+3. 使用者不能直接修改，因此不需要更多的语句来检查变量的值。
+
+
+### 作用域
+声明的作用域：指用到变量时所声明名字的源代码段
+
+函数中，词法块嵌套，一个局部变量声明可能覆盖另一个。
+```go
+package main
+
+import "fmt"
+
+func main() {
+    x := "hello!"
+    for i := 0; i < len(x); i++ {
+        x :=x[i]
+        if x != '!' {
+            x := x+ 'A'- 'a'
+            fmt.Println(x)
+        }
+    }
+    fmt.Println(x)
+}
+// output ～
+/**
+    72
+    69
+    76
+    76
+    79
+ */
+```
+
+
+**隐式词法块的作用域**
+else中仍可以使用if中的声明
+```go
+package main
+
+import (
+    "fmt"
+    "math/rand"
+)
+
+func main() {
+    if x := f(); x == 0 {
+        fmt.Println("x match zero")
+    } else if y := f(); y == x {
+        fmt.Println("range num tow match")
+    } else {
+        fmt.Println("nomatch num:", x, y)
+    }
+}
+
+func f() int  {
+    return rand.Intn(10)
+}
+
+// output~
+/**
+nomatch num: 1 7
+*/
+```
 
 
 ### 错误
