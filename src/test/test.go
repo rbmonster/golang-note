@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"reflect"
 	"strconv"
 	"sync"
 	"time"
@@ -28,8 +27,23 @@ func (w Wheel) Write(p []byte) (n int, err error) {
 	return 12, nil
 }
 
+type HandlerFunc func(x int, ptr *[3]int, f func(inter interface{}))
+
+func (w Wheel) list(x int, ptr *[3]int, f func(inter interface{})) {
+	fmt.Println(x, *ptr)
+	f(1)
+	fmt.Println("========>")
+	fmt.Println(w.owner)
+}
+
 // teetsetes
 func main() {
+
+	wheel := Wheel{owner: "haha"}
+	array := [3]int{1, 2, 3}
+	wheel.list(1, &array, func(inter interface{}) {
+		fmt.Println(inter)
+	})
 	//defer trace("main trace")
 	//var done = make(chan int)
 	//for i := 0; i < 100; i++ {
@@ -65,10 +79,10 @@ func main() {
 	//once.Do(f)
 	//
 	//once.Do(f)
-	fmt.Print("hello world")
-
-	var x int
-	fmt.Println(reflect.TypeOf(x))
+	//fmt.Print("hello world")
+	//
+	//var x int
+	//fmt.Println(reflect.TypeOf(x))
 }
 
 type entry struct {
