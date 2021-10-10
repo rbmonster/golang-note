@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"golang-note/src/basic"
+	"golang-note/src/basic/fib"
 )
 
 func init() {
@@ -10,6 +10,6 @@ func init() {
 }
 
 func main() {
-	var res = basic.Fib(10)
+	var res = fib.Fib(10)
 	fmt.Println(res)
 }

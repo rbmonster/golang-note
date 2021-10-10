@@ -1,4 +1,4 @@
-package basic
+package fib
 
 import "fmt"
 

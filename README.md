@@ -113,10 +113,33 @@ func zero(ptr [3]int) {
 }
 ```
 
+### 指针
+**指针**：变量存储值的地方，指针的值为一个变量的地址。取地址符是 &，放到一个变量前使用就会返回相应变量的内存地址。`*int` 表示指针类型。
+
+```go
+x := 1
+p := &x
+fmt.Println(x, *p, p)  // 1 1 0xc00001e070
+*p = 3
+fmt.Println(x, *p, p) //  3 3 0xc00001e070
+
+func incr (p *int) {
+	*p +=1
+}
+
+func pass () *int {
+	x := 12
+	return &x
+}
+```
+
+
 ### 值传递与引用传递
 Go把数组和其他类型都看成值传递。在函数调用时候传入参数都会创建一个副本，然后赋值给对应的函数变量，所以传递大的数组会变得很低效
 > 对于数组类型的函数参数，可以显示地传递一个数组指针，防止数组参数传递的低效复制
 
+Go语言中的引用类型有：映射（map），数组切片（slice），通道（channel），方法与函数。
+**struct结构体为值传递**
 ```
 func main() {
     zero(&p)
@@ -406,16 +429,6 @@ j, k = k, j
 // 短变量声明复用，err变量实现复用，声明中必须要有一个变量不重复
 resp, err := http.Get(url)
 resp1, err := http.Get(url)
-```
-
-**指针**：变量存储值的地方，指针的值为一个变量的地址。
-
-```go
-x := 1
-p := &x
-fmt.Println(x, *p, p)  // 1 1 0xc00001e070
-*p = 3
-fmt.Println(x, *p, p) //  3 3 0xc00001e070
 ```
 
 **new函数创建变量**: 初始化为T类型的零值，并返回其地址
@@ -883,9 +896,60 @@ func (p Point) Distance(q Point) float64 {
 Go语言的接口独特之处在于接口是隐式实现的。对于一个具体的类型，无须声明它实现了哪些接口，只要提供接口所必须的方法即可。
 
 ```go
+/* 定义接口 */
+type interface_name interface {
+    method_name1 [return_type]
+    method_name2 [return_type]
+    method_name3 [return_type]
+    //...
+    method_namen [return_type]
+}
+
+/* 定义结构体 */
+type struct_name struct {
+/* variables */
+}
+
+/* 实现接口方法 */
+func (struct_name_variable struct_name) method_name1() [return_type] {
+/* 方法实现 */
+}
+
+// 例子
+type DoInterface interface {
+    write(msg string)
+    read()string
+    doRead() (msg string, err error)
+    doWrite(msg string) (ok bool, err error)
+}
+
+
 
 ```
 
+接口实现
+```go
+type DoInterface interface {
+	doRead() (msg string, err error)
+	doWrite(msg string) (ok bool, err error)
+}
+
+func (w Wheel) doWrite(msg string) (ok bool, err error){
+	fmt.Println("write",msg)
+	return true, nil
+}
+
+func (w Wheel) doRead() (msg string, err error){
+	msg = "sdaf"
+	fmt.Println("read", msg)
+	return  "sdf", nil
+}
+
+func main() {
+    var wl DoInterface = Wheel{}
+	wl.DoRead()
+}
+```
 
 接口是一种抽象类型，一个具体类型只要实现了接口的所有方法，就该接口参数就可以指向该类型。这种把一种类型替换，为满足同一接口的另一种类型的特性称为可取代性。
 > 一个接口类型定义了一套方法，如果一个具体类型要实现该接口，那么必须实现接口类型定义中的所有方法。
@@ -915,29 +979,7 @@ w = os.Stdout
 ```
 
 **接口值**：接口可以直接用 `==` 比较，如果两个接口值都是nil或者二者的动态值相等，那么两个接口值相等
-
-[comment]: <> (> 若一个变量仅进行参数声明，未进行赋值，当调用`w != nil` 的防御性检查将失效)
-
-**类型断言**：检查作为操作数的动态类型是否满足指定的断言类型，类似于x(T)
-> 如果断言类型是个具体类型，那么类型断言会检查x的动态类型是否就是T\
-> 如果断言类型是接口类型，那么类型断言检查x的动态类型是否满足T\
-> 断言中T是否使用`*` 在于支持的类型实现的方法，是否为指针方法，当然编译器会进行优化
-```go
-var w io.Writer
-w = os.Stdout
-f := w.(*os.File)
-c := w.(*bytes.Buffer) // 执行报错，持有的接口为 *os.file
-
-c, ok := w.(*bytes.Buffer)  // 通过ok返回值确定类型是否正确，直接避免报错
-
-if !ok {
-    fmt.Println(c)
-}
-```
-
-类型分支：
-1. 子类型多态：如http.Handler与sort.Interface 等接口，各种方法突出了满足这个接口的具体类型，但隐藏了各个具体类型的布局和各自特有的功能。
-2. 特设多态(可联合识别):充分利用接口值能容纳各种具体类型的能力，把接口作为这些类型的联合来使用。
+> 如果接口的值是不可比较的如slice或者map类型，程序直接报宕机错误
 
 
 #### http.Handler接口
@@ -1041,6 +1083,29 @@ func (db database) price(w http.ResponseWriter, req *http.Request) {
 > 因为接口仅在有两个或者多个类型满足的情况下，所以接口就必然会抽象掉具体的实现细节。这样的设计的结果会出现更简单和更少方法的接口。
 
 
+### 类型断言
+
+**类型断言**：检查作为操作数的动态类型是否满足指定的断言类型，类似于x(T)
+> 如果断言类型是个具体类型，那么类型断言会检查x的动态类型是否就是T\
+> 如果断言类型是接口类型，那么类型断言检查x的动态类型是否满足T\
+> 断言中T是否使用`*` 在于支持的类型实现的方法，是否为指针方法，当然编译器会进行优化
+```go
+var w io.Writer
+w = os.Stdout
+f := w.(*os.File)
+c := w.(*bytes.Buffer) // 执行报错，持有的接口为 *os.file
+
+c, ok := w.(*bytes.Buffer)  // 通过ok返回值确定类型是否正确，直接避免报错
+
+if !ok {
+    fmt.Println(c)
+}
+```
+
+类型分支：
+1. 子类型多态：如http.Handler与sort.Interface 等接口，各种方法突出了满足这个接口的具体类型，但隐藏了各个具体类型的布局和各自特有的功能。
+2. 特设多态(可联合识别):充分利用接口值能容纳各种具体类型的能力，把接口作为这些类型的联合来使用。
+
 ### 封装性
 Go语言只有一种方式控制命名的可见行：定义的时候首字母大写的标识符是可以从包中导出的，而首字母没有大写不导出。
 
@@ -1079,7 +1144,6 @@ func main() {
     79
  */
 ```
-
 
 **隐式词法块的作用域**
 else中仍可以使用if中的声明
@@ -1383,9 +1447,9 @@ Go并发核心：**不要通过共享内存来通信，应该通过通信来共�
 **串行受限**：借助通道把共享变量的地址从上一步到下一步，从而在流水线上的多个goroutine之间共享该变量。而该共享变量就受限于流水线的第一步，这种受限就是串行受限
 
 
-#### sync
+### sync
 
-##### sync.Mutex
+#### sync.Mutex
 
 `sync.Mutex`:互斥锁，互斥量保护共享变量，**互斥量是不可重入**的。
 ```
@@ -1396,7 +1460,7 @@ defer mu.Unlock()
 mu.Unlock()
 ```
 
-##### sync.RWMutex
+#### sync.RWMutex
 `sync.RWMutex`：读写互斥锁，适用于获取读锁且锁竞争激烈比较有优势，因为RWMutex需要更复杂的内部设置工作，所以在竞争不激烈的情况反而比普通的互斥锁慢。
 
 ```
@@ -1408,7 +1472,7 @@ mw.Lock() // 写锁
 mw.Unlock() 
 ```
 
-##### sync.Once
+#### sync.Once
 
 `sync.Once`:针对一次性初始化问题，Once中包含一个boolean的变量和一个互斥量，boolean变量标志记录是否初始化完成。
 
@@ -1420,6 +1484,28 @@ var f = func() {
 }
 // 首次调用布尔变量为false，调用完成后boolean为true
 once.Do(f)
+```
+
+#### sync.WaitGroup
+
+waitGroup用于类似java中的countDownLaunch，等待子任务完成之后在开始主任务。使用`add(num)` `Done()` `wait()`方法来做控制
+```go
+func main() {
+    var wg sync.WaitGroup
+    for i := 0; i < 5; i++ {
+        wg.Add(1)
+        go func(taskNo int) {
+            time.Sleep(1*time.Second)
+            log.Println("done for subtask:", taskNo)
+            wg.Done()
+        }(i)
+    }
+    wg.Wait()
+    log.Println("main task start")
+    time.Sleep(1 * time.Second)
+    log.Println("main task done")
+}
+
 ```
 
 

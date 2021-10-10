@@ -4,7 +4,7 @@
 package treesort_test
 
 import (
-	"golang-note/src/treesort"
+	"golang-note/src/basic/treesort"
 	"math/rand"
 	"sort"
 	"testing"
