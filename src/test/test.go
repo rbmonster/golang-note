@@ -57,8 +57,23 @@ func main() {
 	//nums := []int{3,1,6,3,87,42,2,7,12,31,43}
 	//quicksort(nums, 0, len(nums)-1)
 	//fmt.Println(nums)
-	nums := []int{1, 3, 1, 5, 4}
-	findPairs(nums, 0)
+	nums := []int{2, 3, 1, 0, 2, 5, 3}
+	findRepeatNumber(nums)
+}
+
+func findRepeatNumber(nums []int) int {
+	for i := 0; i < len(nums); i++ {
+		from := i
+		fmt.Println("cyc:", from, nums[from])
+		for nums[from] != from {
+			if nums[from] == nums[nums[from]] {
+				return nums[from]
+			}
+			nums[from], nums[nums[from]] = nums[nums[from]], nums[from]
+			fmt.Println(from, nums[from])
+		}
+	}
+	return 0
 }
 
 func maxAbsValExpr(arr1 []int, arr2 []int) int {
